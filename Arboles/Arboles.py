@@ -46,6 +46,7 @@ g.add_edges([(combinacion, estado) for combinacion, estado in enumerate(arregloR
 visual_style = {}
 
 
+
 # Set bbox and margin
 visual_style["bbox"] = (5000,5000)
 visual_style["margin"] = 27

@@ -172,9 +172,9 @@ py::array_t<int> generarRelacionesArbol(int filas, int columnas, py::list B, py:
         asignarNivel(i, posicionCiclo, relacionEstados, nivelEstado, pilaRegistroNiveles);
     }
 
-    for (int i = 0; i < combinaciones; i++) {
+    /*for (int i = 0; i < combinaciones; i++) {
         cout << "Combinacion: " << i << " Siguiente: " << relacionEstados[i] << " Nivel combinacion: " << nivelEstado[i] << endl;
-    }
+    }*/
 
     return py::array_t<int>(
         { combinaciones },
