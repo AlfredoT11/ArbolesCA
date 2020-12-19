@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30717.126
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Arboles", "Arboles\Arboles.pyproj", "{C689EB9D-459B-45C1-8A98-6E95AE4FB1EA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OptimizacionesC", "OptimizacionesC\OptimizacionesC.vcxproj", "{9F668862-AFA8-4162-B09E-15189AE87DB0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C689EB9D-459B-45C1-8A98-6E95AE4FB1EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C689EB9D-459B-45C1-8A98-6E95AE4FB1EA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C689EB9D-459B-45C1-8A98-6E95AE4FB1EA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C689EB9D-459B-45C1-8A98-6E95AE4FB1EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C689EB9D-459B-45C1-8A98-6E95AE4FB1EA}.Release|x64.ActiveCfg = Release|Any CPU
+		{C689EB9D-459B-45C1-8A98-6E95AE4FB1EA}.Release|x86.ActiveCfg = Release|Any CPU
+		{9F668862-AFA8-4162-B09E-15189AE87DB0}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{9F668862-AFA8-4162-B09E-15189AE87DB0}.Debug|x64.ActiveCfg = Debug|x64
+		{9F668862-AFA8-4162-B09E-15189AE87DB0}.Debug|x64.Build.0 = Debug|x64
+		{9F668862-AFA8-4162-B09E-15189AE87DB0}.Debug|x86.ActiveCfg = Debug|Win32
+		{9F668862-AFA8-4162-B09E-15189AE87DB0}.Debug|x86.Build.0 = Debug|Win32
+		{9F668862-AFA8-4162-B09E-15189AE87DB0}.Release|Any CPU.ActiveCfg = Release|Win32
+		{9F668862-AFA8-4162-B09E-15189AE87DB0}.Release|x64.ActiveCfg = Release|x64
+		{9F668862-AFA8-4162-B09E-15189AE87DB0}.Release|x64.Build.0 = Release|x64
+		{9F668862-AFA8-4162-B09E-15189AE87DB0}.Release|x86.ActiveCfg = Release|Win32
+		{9F668862-AFA8-4162-B09E-15189AE87DB0}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A0C3203B-7BC1-4E25-90F4-36CA0CEEFDB2}
+	EndGlobalSection
+EndGlobal
