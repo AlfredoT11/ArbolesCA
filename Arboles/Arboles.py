@@ -1,5 +1,6 @@
 import OptimizacionesC
 import numpy as np
+from math import sqrt
 
 """import networkx as nx
 import matplotlib.pyplot as plt
@@ -10,7 +11,7 @@ from igraph import *"""
 
 from PIL import Image, ImageDraw
 
-def dibujar_hijos(estado, angulo_propio, rango_disponible, centro_estado, radio = 1000):
+def dibujar_hijos(estado, angulo_propio, rango_disponible, centro_estado, radio = 1000, is_ciclo = False, siguiente_elemento = -1):
     
     global relacion_incidencias
     global draw
@@ -20,6 +21,11 @@ def dibujar_hijos(estado, angulo_propio, rango_disponible, centro_estado, radio 
 
     if relacion_incidencias[estado][0] == estado:
         hijos = relacion_incidencias[estado][1:]
+    elif is_ciclo:
+        #Remover el siguiente elemento.
+        hijos = relacion_incidencias[estado]
+        hijos.remove(siguiente_elemento)
+        print("Hijos: ", hijos)
     else:
         hijos = relacion_incidencias[estado]
 
@@ -28,7 +34,7 @@ def dibujar_hijos(estado, angulo_propio, rango_disponible, centro_estado, radio 
     rango_por_hijo = rango_disponible/num_hijos
 
     angulo_hijo_1 = angulo_propio-(rango_disponible/2) + rango_por_hijo/2
-    print("1: ", angulo_hijo_1)
+    #print("1: ", angulo_hijo_1)
     #Dibujar hijo.
     offset_x, offset_y = radio*np.cos(angulo_hijo_1), radio*np.sin(angulo_hijo_1)
     draw.rectangle((centro_x+offset_x-tamanio_cuadrado, centro_y+offset_y-tamanio_cuadrado, centro_x+offset_x+tamanio_cuadrado, centro_y+offset_y+tamanio_cuadrado), fill = 0)
@@ -40,7 +46,7 @@ def dibujar_hijos(estado, angulo_propio, rango_disponible, centro_estado, radio 
 
     if num_hijos > 1:
         for i, estado_hijo in enumerate(hijos[1:]):
-            print(i+1, ": ", angulo_hijo_1+(i+1)*rango_por_hijo)
+            #print(i+1, ": ", angulo_hijo_1+(i+1)*rango_por_hijo)
             #Dibujar hijo.
             offset_x, offset_y = radio*np.cos(angulo_hijo_1+(i+1)*rango_por_hijo), radio*np.sin(angulo_hijo_1+(i+1)*rango_por_hijo)
             draw.rectangle((centro_x+offset_x-tamanio_cuadrado, centro_y+offset_y-tamanio_cuadrado, centro_x+offset_x+tamanio_cuadrado, centro_y+offset_y+tamanio_cuadrado), fill = 0)
@@ -135,7 +141,9 @@ print(combinaciones)
 n = 5000
 m = 5000
 print("Procesamiento de la imagen")
-image = Image.new('RGB', (n, m), (255, 255, 255))
+
+image = Image.new('RGB', (n, m), (0, 0, 0))
+#image = Image.new('RGB', (n, m), (255, 255, 255))
 draw = ImageDraw.Draw(image)
 #draw.line((0, 0) + image.size, fill=128)
 #draw.line((0, image.size[1], image.size[0], 0), fill=128)
@@ -144,7 +152,31 @@ draw.rectangle(((image.size[0]/2)-5, (image.size[1]/2)-5, (image.size[0]/2)+5, (
 centro_x, centro_y = image.size[0]/2, image.size[1]/2
 tamanio_cuadrado = 2
 
-dibujar_hijos(0, 0, 360, (centro_x, centro_y))
+if len(ciclos[0]) > 0:
+    
+    print("Ciclo :o")
+    estados_ciclo = len(ciclos[0])
+    tamanio_arco = 2*np.pi/estados_ciclo
+    radio_ciclo = 500
+    diagonal = radio_ciclo*sqrt(2)
+
+    draw.ellipse((centro_x - radio_ciclo, centro_y - radio_ciclo, centro_x + radio_ciclo, centro_y + radio_ciclo), outline=128)
+
+    for i in range(estados_ciclo):
+        
+        offset_x, offset_y = radio_ciclo*np.cos(i*tamanio_arco), radio_ciclo*np.sin(i*tamanio_arco)
+        offset_x_sig, offset_y_sig = radio_ciclo*np.cos((i+1)*tamanio_arco), radio_ciclo*np.sin((i+1)*tamanio_arco)
+
+        draw.rectangle((centro_x+offset_x-tamanio_cuadrado, centro_y+offset_y-tamanio_cuadrado, centro_x+offset_x+tamanio_cuadrado, centro_y+offset_y+tamanio_cuadrado), fill = 0)
+        
+        if ciclos[0][i] in relacion_incidencias:
+            dibujar_hijos(ciclos[0][i], i*tamanio_arco, tamanio_arco, (centro_x+offset_x, centro_y+offset_y), is_ciclo=True, siguiente_elemento = resultados[0][ciclos[0][i]])
+
+        #draw.arc((centro_x+offset_x, centro_y+offset_y, centro_x+offset_x_sig, centro_y+offset_y_sig), i*tamanio_arco, (i+1)*tamanio_arco)
+        #dibujar_hijos(estado, angulo_propio, rango_disponible, centro_estado, radio = 1000):
+
+else:
+    dibujar_hijos(0, 0, 360, (centro_x, centro_y))
 
 """total_rectangulos = 7
 radio = 1000
