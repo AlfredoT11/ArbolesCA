@@ -19,6 +19,8 @@ int potencia(int x, int p)
 }
 
 int asignarNivel(int combinacion, int &posInicioCiclo, int *relacionEstados, int *niveles, vector<int> &pilaRegistro) {
+    
+    //Se verifica si el siguiente estado tiene un nivel superior a 0, de ser así, se le asigna el nivel siguiente a este. 
     if (niveles[relacionEstados[combinacion]] > 0) {
         niveles[combinacion] = niveles[relacionEstados[combinacion]] + 1;
         return niveles[relacionEstados[combinacion]] + 1;
@@ -53,7 +55,7 @@ int asignarNivel(int combinacion, int &posInicioCiclo, int *relacionEstados, int
     }
 }
 
-py::array_t<int> generarRelacionesArbol(int filas, int columnas, py::list B, py::list S) {
+py::list generarRelacionesArbol(int filas, int columnas, py::list B, py::list S) {
     //Se almacena memoria para el espacio del autómata celular.
     bool** grid_automata = (bool**)calloc(filas, sizeof(bool*));
     for (int i = 0; i < filas; i++) {
@@ -67,6 +69,9 @@ py::array_t<int> generarRelacionesArbol(int filas, int columnas, py::list B, py:
     //py::array_t<int> relacionEstados = py::array_t<int>(combinaciones);
     int* relacionEstados = (int*)calloc(combinaciones, sizeof(int));
     py::array_t<int> relacionesResultantes = py::array_t<int>(combinaciones);
+
+    //Se almacena espacio para el conteo de estados de llegada a cada estado.
+    int* contadoresIncidencia = (int*)calloc(combinaciones, sizeof(int));
 
     //Se almacena espacio para el nivel de cada estado para la representación gráfica.
     int* nivelEstado = (int*)calloc(combinaciones, sizeof(int));
@@ -91,6 +96,7 @@ py::array_t<int> generarRelacionesArbol(int filas, int columnas, py::list B, py:
     for (int i = 0; i < tamanioS; i++) {
         SC[i] = S[i].cast<int>();
     }
+
 
     //Inicia el recorrido de todas las posibles combinaciones.
     for (int numCombinacion = 0; numCombinacion < combinaciones; numCombinacion++) {
@@ -155,6 +161,7 @@ py::array_t<int> generarRelacionesArbol(int filas, int columnas, py::list B, py:
         }
 
         relacionEstados[numCombinacion] = nuevoEstadoValor;
+        contadoresIncidencia[nuevoEstadoValor]++;
 
     }
 
@@ -176,12 +183,36 @@ py::array_t<int> generarRelacionesArbol(int filas, int columnas, py::list B, py:
         cout << "Combinacion: " << i << " Siguiente: " << relacionEstados[i] << " Nivel combinacion: " << nivelEstado[i] << endl;
     }*/
 
-    return py::array_t<int>(
+    py::list resultados;
+    resultados.append(py::list(py::array_t<int>(
         { combinaciones },
         { 4 },
         relacionEstados
         //free_when_done);
-        );
+        )));
+
+    resultados.append(py::list(py::array_t<int>(
+        { combinaciones },
+        { 4 },
+        nivelEstado
+        //free_when_done);
+        )));
+
+    resultados.append(py::list(py::array_t<int>(
+        { combinaciones },
+        { 4 },
+        contadoresIncidencia
+        //free_when_done);
+        )));
+
+    return resultados;
+
+    /*return py::array_t<int>(
+        { combinaciones },
+        { 4 },
+        relacionEstados
+        //free_when_done);
+        );*/
 
 }
 
