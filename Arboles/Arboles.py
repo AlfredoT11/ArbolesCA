@@ -1,6 +1,8 @@
 import OptimizacionesC
 import numpy as np
 from math import sqrt
+import os
+import re
 
 """import networkx as nx
 import matplotlib.pyplot as plt
@@ -11,7 +13,30 @@ from igraph import *"""
 
 from PIL import Image, ImageDraw
 
-def dibujar_hijos(estado, angulo_propio, rango_disponible, centro_estado, radio = 1000, is_ciclo = False, siguiente_elemento = -1):
+def validar_regla_ingresada(regla_ingresada):
+    print(type(regla_ingresada))
+    if re.search("^B[0]?[1]?[2]?[3]?[4]?[5]?[6]?[7]?[8]?/S[0]?[1]?[2]?[3]?[4]?[5]?[6]?[7]?[8]?$", regla_ingresada):
+        print("Regla válida.")
+        print(regla_ingresada.split("/"))
+        B_S = regla_ingresada.split("/")
+
+        B = []
+        if len(B_S[0]) > 1:
+            for valor in B_S[0][1:]:
+                B.append(int(valor))
+
+        S = []
+        if len(B_S[1]) > 1:
+            for valor in B_S[1][1:]:
+                S.append(int(valor))
+
+        return B, S
+
+    else:
+        print("Regla inválida.")
+        return False, False
+
+def dibujar_hijos(estado, angulo_propio, rango_disponible, centro_estado, radio = 1000, is_ciclo = False, siguiente_elemento_ciclo = -1):
     
     global relacion_incidencias
     global draw
@@ -24,8 +49,10 @@ def dibujar_hijos(estado, angulo_propio, rango_disponible, centro_estado, radio 
     elif is_ciclo:
         #Remover el siguiente elemento.
         hijos = relacion_incidencias[estado]
-        hijos.remove(siguiente_elemento)
-        print("Hijos: ", hijos)
+        #print("Estado ciclado {} - > {}".format(estado, siguiente_elemento_ciclo))
+        #print("Hijos antes: ", hijos)
+        hijos.remove(siguiente_elemento_ciclo)
+        #print("Hijos: ", hijos)
     else:
         hijos = relacion_incidencias[estado]
 
@@ -56,18 +83,22 @@ def dibujar_hijos(estado, angulo_propio, rango_disponible, centro_estado, radio 
                 dibujar_hijos(estado_hijo, angulo_hijo_1+(i+1)*rango_por_hijo, rango_por_hijo, (centro_x+offset_x, centro_y+offset_y), radio+1000)
 
 
-#for i in range(10):
-#    print("Hola")
-
 filas = int(input("Ingresa las filas: "))
 columnas = int(input("Ingresa las columnas: "))
-nombreArchivo = input("Nombre del archivo: ")
 
 #B = [0, 1, 2, 3, 4, 5, 6]
 #S = [3, 7]
 
-B = [3]
-S = [2, 3]
+#B = [3]
+#S = [2, 3]
+
+B = False
+S = False
+
+regla = "B2/S7"
+
+while not B:
+    B, S = validar_regla_ingresada(regla)
 
 resultados = OptimizacionesC.generarRelacionesArbol(filas, columnas, B, S)
 print(type(resultados))
@@ -137,59 +168,59 @@ print(relacion_incidencias)
 combinaciones = 2**(filas*columnas)
 print(combinaciones)
 
+#Creación del directorio para almacenar los árboles resultantes.
+
+nombre_directorio = "{}_{}x{}".format(regla.replace("/", "_"), filas, columnas)
+
+if not os.path.exists(nombre_directorio):
+    print("No encontrado, creando.")
+    os.makedirs(nombre_directorio)
 
 n = 5000
 m = 5000
 print("Procesamiento de la imagen")
 
-image = Image.new('RGB', (n, m), (0, 0, 0))
-#image = Image.new('RGB', (n, m), (255, 255, 255))
-draw = ImageDraw.Draw(image)
-#draw.line((0, 0) + image.size, fill=128)
-#draw.line((0, image.size[1], image.size[0], 0), fill=128)
-draw.rectangle(((image.size[0]/2)-5, (image.size[1]/2)-5, (image.size[0]/2)+5, (image.size[1]/2)+5), fill = 0)
+for num_ciclo, ciclo in enumerate(ciclos):
 
-centro_x, centro_y = image.size[0]/2, image.size[1]/2
-tamanio_cuadrado = 2
+    #image = Image.new('RGB', (n, m), (0, 0, 0))
+    image = Image.new('RGB', (n, m), (255, 255, 255))
+    draw = ImageDraw.Draw(image)
+    #draw.line((0, 0) + image.size, fill=128)
+    #draw.line((0, image.size[1], image.size[0], 0), fill=128)
+    draw.rectangle(((image.size[0]/2)-5, (image.size[1]/2)-5, (image.size[0]/2)+5, (image.size[1]/2)+5), fill = 0)
 
-if len(ciclos[0]) > 0:
+    centro_x, centro_y = image.size[0]/2, image.size[1]/2
+    tamanio_cuadrado = 2
+
+    if len(ciclo) > 1:
     
-    print("Ciclo :o")
-    estados_ciclo = len(ciclos[0])
-    tamanio_arco = 2*np.pi/estados_ciclo
-    radio_ciclo = 500
-    diagonal = radio_ciclo*sqrt(2)
+        print("Ciclo :o")
+        estados_ciclo = len(ciclo)
+        tamanio_arco = 2*np.pi/estados_ciclo
+        radio_ciclo = 500
+        diagonal = radio_ciclo*sqrt(2)
 
-    draw.ellipse((centro_x - radio_ciclo, centro_y - radio_ciclo, centro_x + radio_ciclo, centro_y + radio_ciclo), outline=128)
+        draw.ellipse((centro_x - radio_ciclo, centro_y - radio_ciclo, centro_x + radio_ciclo, centro_y + radio_ciclo), outline=128)
 
-    for i in range(estados_ciclo):
+        for i in range(estados_ciclo):
         
-        offset_x, offset_y = radio_ciclo*np.cos(i*tamanio_arco), radio_ciclo*np.sin(i*tamanio_arco)
-        offset_x_sig, offset_y_sig = radio_ciclo*np.cos((i+1)*tamanio_arco), radio_ciclo*np.sin((i+1)*tamanio_arco)
+            offset_x, offset_y = radio_ciclo*np.cos(i*tamanio_arco), radio_ciclo*np.sin(i*tamanio_arco)
+            offset_x_sig, offset_y_sig = radio_ciclo*np.cos((i+1)*tamanio_arco), radio_ciclo*np.sin((i+1)*tamanio_arco)
 
-        draw.rectangle((centro_x+offset_x-tamanio_cuadrado, centro_y+offset_y-tamanio_cuadrado, centro_x+offset_x+tamanio_cuadrado, centro_y+offset_y+tamanio_cuadrado), fill = 0)
+            draw.rectangle((centro_x+offset_x-tamanio_cuadrado, centro_y+offset_y-tamanio_cuadrado, centro_x+offset_x+tamanio_cuadrado, centro_y+offset_y+tamanio_cuadrado), fill = 0)
         
-        if ciclos[0][i] in relacion_incidencias:
-            dibujar_hijos(ciclos[0][i], i*tamanio_arco, tamanio_arco, (centro_x+offset_x, centro_y+offset_y), is_ciclo=True, siguiente_elemento = resultados[0][ciclos[0][i]])
+            if ciclo[i] in relacion_incidencias:
+                if len(relacion_incidencias[ciclo[i]]) > 1:
+                    if i == 0:
+                        sig_ele_ciclo = ciclo[-1]
+                    else:
+                        sig_ele_ciclo = ciclo[i-1]
+                    dibujar_hijos(ciclo[i], i*tamanio_arco, tamanio_arco, (centro_x+offset_x, centro_y+offset_y), is_ciclo=True, siguiente_elemento_ciclo=sig_ele_ciclo)
 
-        #draw.arc((centro_x+offset_x, centro_y+offset_y, centro_x+offset_x_sig, centro_y+offset_y_sig), i*tamanio_arco, (i+1)*tamanio_arco)
-        #dibujar_hijos(estado, angulo_propio, rango_disponible, centro_estado, radio = 1000):
+    else:
+        dibujar_hijos(0, 0, 360, (centro_x, centro_y))
 
-else:
-    dibujar_hijos(0, 0, 360, (centro_x, centro_y))
-
-"""total_rectangulos = 7
-radio = 1000
-
-
-for i in range(total_rectangulos):
-    offset_x, offset_y = radio*np.cos(i*(2*np.pi/total_rectangulos)), radio*np.sin(i*(2*np.pi/total_rectangulos))
-    print(centro_x+offset_x, " , ", centro_y+offset_y)
-    draw.rectangle((centro_x+offset_x-tamanio_cuadrado, centro_y+offset_y-tamanio_cuadrado, centro_x+offset_x+tamanio_cuadrado, centro_y+offset_y+tamanio_cuadrado), fill = 0)
-    draw.line((centro_x, centro_y, centro_x+offset_x, centro_y+offset_y), fill=128, width=1)
-"""
-
-image.save("imagenPrueba.png", "PNG")
+    image.save( "{}\{}_{}.png".format(nombre_directorio, regla.replace("/", "_"), num_ciclo),  "PNG")
 
 #Pruebas con Wolfram
 """with open("prueba.wls", 'w') as archivo_WLS:
