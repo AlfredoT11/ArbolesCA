@@ -13,6 +13,15 @@ from igraph import *"""
 
 from PIL import Image, ImageDraw
 
+def list_to_string(s):  
+    
+    str1 = ""  
+    
+    for ele in s:  
+        str1 += ele   
+    
+    return str1  
+
 def validar_regla_ingresada(regla_ingresada):
     print(type(regla_ingresada))
     if re.search("^B[0]?[1]?[2]?[3]?[4]?[5]?[6]?[7]?[8]?/S[0]?[1]?[2]?[3]?[4]?[5]?[6]?[7]?[8]?$", regla_ingresada):
@@ -35,6 +44,42 @@ def validar_regla_ingresada(regla_ingresada):
     else:
         print("Regla inválida.")
         return False, False
+
+def asignar_nombre_canonico(estado, is_ciclo = False, siguiente_elemento_ciclo = -1):
+    
+    global relacion_incidencias
+
+    if estado not in relacion_incidencias.keys():
+        return 2
+
+    #Eliminar estados ciclados. 
+    if relacion_incidencias[estado][0] == estado:
+        hijos = relacion_incidencias[estado][1:].copy()
+    elif is_ciclo:
+        #Remover el siguiente elemento.
+        hijos = relacion_incidencias[estado].copy()
+        #print("Estado ciclado {} - > {}".format(estado, siguiente_elemento_ciclo))
+        #print("Hijos antes: ", hijos)
+        hijos.remove(siguiente_elemento_ciclo)
+        #print("Hijos: ", hijos)
+    else:
+        hijos = relacion_incidencias[estado].copy()
+
+    valores_canonicos_hijos = []
+    for h in hijos:
+        valores_canonicos_hijos.append(asignar_nombre_canonico(h))
+
+    valores_canonicos_hijos.sort()
+    valores_canonicos_binario = ['1']
+
+    for valor in valores_canonicos_hijos:
+        valores_canonicos_binario.append(bin(valor)[2:])
+
+    valores_canonicos_binario.append('0')
+
+    valor_canonico = list_to_string(valores_canonicos_binario)
+    return int(valor_canonico, 2)
+
 
 def dibujar_hijos(estado, angulo_propio, rango_disponible, centro_estado, radio = 1000, is_ciclo = False, siguiente_elemento_ciclo = -1):
     
@@ -101,7 +146,7 @@ while not B:
     B, S = validar_regla_ingresada(regla)
 
 resultados = OptimizacionesC.generarRelacionesArbol(filas, columnas, B, S)
-print(type(resultados))
+#print(type(resultados))
 
 #resultados[0] = siguiente estado.
 #resultados[1] = nivel del estado.
@@ -133,7 +178,7 @@ for i in range(len(resultados[0])):
 
 
             else:
-                print("Aislado: {} -> {} con {} incidencias.".format(i, resultados[0][i], resultados[2][i]))
+                #print("Aislado: {} -> {} con {} incidencias.".format(i, resultados[0][i], resultados[2][i]))
                 still_life.append(i)
 
 print("Ciclos")
@@ -160,17 +205,17 @@ for estado, siguiente_estado in enumerate(resultados[0]):
     else:
         relacion_incidencias[siguiente_estado].append(estado)
 
-print(relacion_incidencias)
+#print(relacion_incidencias)
 #print(resultados[0])
 #print(resultados[1])
 #print(resultados[2])
 
 combinaciones = 2**(filas*columnas)
-print(combinaciones)
+#print(combinaciones)
 
 #Creación del directorio para almacenar los árboles resultantes.
 
-nombre_directorio = "{}_{}x{}".format(regla.replace("/", "_"), filas, columnas)
+nombre_directorio = "{}_{}x{}_pruebaIsomorfo".format(regla.replace("/", "_"), filas, columnas)
 
 if not os.path.exists(nombre_directorio):
     print("No encontrado, creando.")
@@ -180,7 +225,12 @@ n = 5000
 m = 5000
 print("Procesamiento de la imagen")
 
+valores_canonicos_ciclos = []
+
+
 for num_ciclo, ciclo in enumerate(ciclos):
+
+    valores_canonicos_ciclos.append({})
 
     #image = Image.new('RGB', (n, m), (0, 0, 0))
     image = Image.new('RGB', (n, m), (255, 255, 255))
@@ -194,7 +244,7 @@ for num_ciclo, ciclo in enumerate(ciclos):
 
     if len(ciclo) > 1:
     
-        print("Ciclo :o")
+        #print("Ciclo :o")
         estados_ciclo = len(ciclo)
         tamanio_arco = 2*np.pi/estados_ciclo
         radio_ciclo = 500
@@ -210,6 +260,22 @@ for num_ciclo, ciclo in enumerate(ciclos):
             draw.rectangle((centro_x+offset_x-tamanio_cuadrado, centro_y+offset_y-tamanio_cuadrado, centro_x+offset_x+tamanio_cuadrado, centro_y+offset_y+tamanio_cuadrado), fill = 0)
         
             if ciclo[i] in relacion_incidencias:
+
+                ###########
+                #Fragmento para la generacion de valores canónicos.
+                if i == 0:
+                    sig_ele_ciclo = ciclo[-1]
+                else:
+                    sig_ele_ciclo = ciclo[i-1]
+                valor_canonico = asignar_nombre_canonico(ciclo[i], True, sig_ele_ciclo)
+                if valor_canonico not in valores_canonicos_ciclos[-1]:
+                    valores_canonicos_ciclos[-1][valor_canonico] = 1
+                else:
+                    valores_canonicos_ciclos[-1][valor_canonico] += 1
+
+                ###########
+
+
                 if len(relacion_incidencias[ciclo[i]]) > 1:
                     if i == 0:
                         sig_ele_ciclo = ciclo[-1]
@@ -221,6 +287,11 @@ for num_ciclo, ciclo in enumerate(ciclos):
         dibujar_hijos(0, 0, 360, (centro_x, centro_y))
 
     image.save( "{}\{}_{}.png".format(nombre_directorio, regla.replace("/", "_"), num_ciclo),  "PNG")
+
+#Lista valores canonicos...
+for i, diction in enumerate(valores_canonicos_ciclos):
+    print("Ciclo ", i, " : ", diction)
+
 
 #Pruebas con Wolfram
 """with open("prueba.wls", 'w') as archivo_WLS:
