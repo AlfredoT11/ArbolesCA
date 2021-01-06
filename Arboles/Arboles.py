@@ -3,6 +3,7 @@ import numpy as np
 from math import sqrt
 import os
 import re
+import json
 
 """import networkx as nx
 import matplotlib.pyplot as plt
@@ -46,6 +47,10 @@ def validar_regla_ingresada(regla_ingresada):
         return False, False
 
 def asignar_nombre_canonico(estado, is_ciclo = False, siguiente_elemento_ciclo = -1):
+    """Cálculo de Knuth-tuples.
+    Función utilizada para calcular el nombre canónico de un árbol y de esta manera determinar si existe algún árbol
+    isomorfo dentro del conjunto. (AHU algorithm)
+    """
     
     global relacion_incidencias
 
@@ -140,7 +145,7 @@ columnas = int(input("Ingresa las columnas: "))
 B = False
 S = False
 
-regla = "B2/S7"
+regla = "B3/S23"
 
 while not B:
     B, S = validar_regla_ingresada(regla)
@@ -213,9 +218,102 @@ for estado, siguiente_estado in enumerate(resultados[0]):
 combinaciones = 2**(filas*columnas)
 #print(combinaciones)
 
+valores_canonicos_ciclos = []
+
+
+for num_ciclo, ciclo in enumerate(ciclos):
+
+    valores_canonicos_ciclos.append({})
+
+    #image = Image.new('RGB', (n, m), (0, 0, 0))
+    #draw.line((0, 0) + image.size, fill=128)
+    #draw.line((0, image.size[1], image.size[0], 0), fill=128)
+
+    #Dibujado    
+    """image = Image.new('RGB', (n, m), (255, 255, 255))
+    draw = ImageDraw.Draw(image)
+    draw.rectangle(((image.size[0]/2)-5, (image.size[1]/2)-5, (image.size[0]/2)+5, (image.size[1]/2)+5), fill = 0)"""
+
+    #Dibujo.
+    #centro_x, centro_y = image.size[0]/2, image.size[1]/2
+    
+    centro_x, centro_y = 2500, 2500
+    tamanio_cuadrado = 2
+
+    if len(ciclo) > 1:
+    
+        #print("Ciclo :o")
+        estados_ciclo = len(ciclo)
+        tamanio_arco = 2*np.pi/estados_ciclo
+        radio_ciclo = 500
+        diagonal = radio_ciclo*sqrt(2)
+
+        #Dibujado
+        #draw.ellipse((centro_x - radio_ciclo, centro_y - radio_ciclo, centro_x + radio_ciclo, centro_y + radio_ciclo), outline=128)
+
+        for i in range(estados_ciclo):
+        
+            offset_x, offset_y = radio_ciclo*np.cos(i*tamanio_arco), radio_ciclo*np.sin(i*tamanio_arco)
+            offset_x_sig, offset_y_sig = radio_ciclo*np.cos((i+1)*tamanio_arco), radio_ciclo*np.sin((i+1)*tamanio_arco)
+
+            #Dibujado
+            #draw.rectangle((centro_x+offset_x-tamanio_cuadrado, centro_y+offset_y-tamanio_cuadrado, centro_x+offset_x+tamanio_cuadrado, centro_y+offset_y+tamanio_cuadrado), fill = 0)
+        
+            if ciclo[i] in relacion_incidencias:
+
+                ###########
+                #Fragmento para la generacion de valores canónicos.
+                if i == 0:
+                    sig_ele_ciclo = ciclo[-1]
+                else:
+                    sig_ele_ciclo = ciclo[i-1]
+                valor_canonico = asignar_nombre_canonico(ciclo[i], True, sig_ele_ciclo)
+                if valor_canonico not in valores_canonicos_ciclos[-1]:
+                    valores_canonicos_ciclos[-1][valor_canonico] = 1
+                else:
+                    valores_canonicos_ciclos[-1][valor_canonico] += 1
+
+                ###########
+
+
+                if len(relacion_incidencias[ciclo[i]]) > 1:
+                    if i == 0:
+                        sig_ele_ciclo = ciclo[-1]
+                    else:
+                        sig_ele_ciclo = ciclo[i-1]
+
+                    #Dibujado
+                    #dibujar_hijos(ciclo[i], i*tamanio_arco, tamanio_arco, (centro_x+offset_x, centro_y+offset_y), is_ciclo=True, siguiente_elemento_ciclo=sig_ele_ciclo)
+
+    else:
+        #Dibujado
+        #dibujar_hijos(0, 0, 360, (centro_x, centro_y))
+        pass
+
+    #Dibujado
+    #image.save( "{}\{}_{}.png".format(nombre_directorio, regla.replace("/", "_"), num_ciclo),  "PNG")
+
+#Lista valores canonicos...
+#for i, diction in enumerate(valores_canonicos_ciclos):
+    #print("Ciclo ", i, " : ", diction)
+
+arboles_finales = {}
+for i, diction in enumerate(valores_canonicos_ciclos):
+    if json.dumps(diction) not in arboles_finales.keys():
+        arboles_finales[json.dumps(diction)] = []
+        arboles_finales[json.dumps(diction)].append(i)
+    else:
+        arboles_finales[json.dumps(diction)].append(i)
+
+#for arbol in arboles_finales:
+    #print(arbol, " : ", arboles_finales[arbol])
+#print(arboles_finales)
+
+###########################################################
+#Dibujado de arboles finales.
 #Creación del directorio para almacenar los árboles resultantes.
 
-nombre_directorio = "{}_{}x{}_pruebaIsomorfo".format(regla.replace("/", "_"), filas, columnas)
+nombre_directorio = "Resultados\{}_{}x{}".format(regla.replace("/", "_"), filas, columnas)
 
 if not os.path.exists(nombre_directorio):
     print("No encontrado, creando.")
@@ -225,18 +323,12 @@ n = 5000
 m = 5000
 print("Procesamiento de la imagen")
 
-valores_canonicos_ciclos = []
+for num_arbol, arbol in enumerate(arboles_finales):
 
+    ciclo = ciclos[arboles_finales[arbol][0]]
 
-for num_ciclo, ciclo in enumerate(ciclos):
-
-    valores_canonicos_ciclos.append({})
-
-    #image = Image.new('RGB', (n, m), (0, 0, 0))
     image = Image.new('RGB', (n, m), (255, 255, 255))
     draw = ImageDraw.Draw(image)
-    #draw.line((0, 0) + image.size, fill=128)
-    #draw.line((0, image.size[1], image.size[0], 0), fill=128)
     draw.rectangle(((image.size[0]/2)-5, (image.size[1]/2)-5, (image.size[0]/2)+5, (image.size[1]/2)+5), fill = 0)
 
     centro_x, centro_y = image.size[0]/2, image.size[1]/2
@@ -261,36 +353,19 @@ for num_ciclo, ciclo in enumerate(ciclos):
         
             if ciclo[i] in relacion_incidencias:
 
-                ###########
-                #Fragmento para la generacion de valores canónicos.
-                if i == 0:
-                    sig_ele_ciclo = ciclo[-1]
-                else:
-                    sig_ele_ciclo = ciclo[i-1]
-                valor_canonico = asignar_nombre_canonico(ciclo[i], True, sig_ele_ciclo)
-                if valor_canonico not in valores_canonicos_ciclos[-1]:
-                    valores_canonicos_ciclos[-1][valor_canonico] = 1
-                else:
-                    valores_canonicos_ciclos[-1][valor_canonico] += 1
-
-                ###########
-
 
                 if len(relacion_incidencias[ciclo[i]]) > 1:
                     if i == 0:
                         sig_ele_ciclo = ciclo[-1]
                     else:
                         sig_ele_ciclo = ciclo[i-1]
+
                     dibujar_hijos(ciclo[i], i*tamanio_arco, tamanio_arco, (centro_x+offset_x, centro_y+offset_y), is_ciclo=True, siguiente_elemento_ciclo=sig_ele_ciclo)
 
     else:
         dibujar_hijos(0, 0, 360, (centro_x, centro_y))
 
-    image.save( "{}\{}_{}.png".format(nombre_directorio, regla.replace("/", "_"), num_ciclo),  "PNG")
-
-#Lista valores canonicos...
-for i, diction in enumerate(valores_canonicos_ciclos):
-    print("Ciclo ", i, " : ", diction)
+    image.save( "{}\{}_{}.png".format(nombre_directorio, regla.replace("/", "_"), num_arbol),  "PNG")
 
 
 #Pruebas con Wolfram
