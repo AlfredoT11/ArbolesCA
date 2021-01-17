@@ -63,10 +63,7 @@ def asignar_nombre_canonico(estado, is_ciclo = False, siguiente_elemento_ciclo =
     elif is_ciclo:
         #Remover el siguiente elemento.
         hijos = relacion_incidencias[estado].copy()
-        #print("Estado ciclado {} - > {}".format(estado, siguiente_elemento_ciclo))
-        #print("Hijos antes: ", hijos)
         hijos.remove(siguiente_elemento_ciclo)
-        #print("Hijos: ", hijos)
     else:
         hijos = relacion_incidencias[estado].copy()
 
@@ -99,10 +96,7 @@ def dibujar_hijos(estado, angulo_propio, rango_disponible, centro_estado, radio 
     elif is_ciclo:
         #Remover el siguiente elemento.
         hijos = relacion_incidencias[estado]
-        #print("Estado ciclado {} - > {}".format(estado, siguiente_elemento_ciclo))
-        #print("Hijos antes: ", hijos)
         hijos.remove(siguiente_elemento_ciclo)
-        #print("Hijos: ", hijos)
     else:
         hijos = relacion_incidencias[estado]
 
@@ -111,7 +105,6 @@ def dibujar_hijos(estado, angulo_propio, rango_disponible, centro_estado, radio 
     rango_por_hijo = rango_disponible/num_hijos
 
     angulo_hijo_1 = angulo_propio-(rango_disponible/2) + rango_por_hijo/2
-    #print("1: ", angulo_hijo_1)
     #Dibujar hijo.
     offset_x, offset_y = radio*np.cos(angulo_hijo_1), radio*np.sin(angulo_hijo_1)
     draw.rectangle((centro_x+offset_x-tamanio_cuadrado, centro_y+offset_y-tamanio_cuadrado, centro_x+offset_x+tamanio_cuadrado, centro_y+offset_y+tamanio_cuadrado), fill = 0)
@@ -123,7 +116,6 @@ def dibujar_hijos(estado, angulo_propio, rango_disponible, centro_estado, radio 
 
     if num_hijos > 1:
         for i, estado_hijo in enumerate(hijos[1:]):
-            #print(i+1, ": ", angulo_hijo_1+(i+1)*rango_por_hijo)
             #Dibujar hijo.
             offset_x, offset_y = radio*np.cos(angulo_hijo_1+(i+1)*rango_por_hijo), radio*np.sin(angulo_hijo_1+(i+1)*rango_por_hijo)
             draw.rectangle((centro_x+offset_x-tamanio_cuadrado, centro_y+offset_y-tamanio_cuadrado, centro_x+offset_x+tamanio_cuadrado, centro_y+offset_y+tamanio_cuadrado), fill = 0)
@@ -145,7 +137,7 @@ columnas = int(input("Ingresa las columnas: "))
 B = False
 S = False
 
-regla = "B3/S23"
+regla = "B5/S26"
 
 while not B:
     B, S = validar_regla_ingresada(regla)
@@ -224,44 +216,18 @@ valores_canonicos_ciclos = []
 for num_ciclo, ciclo in enumerate(ciclos):
 
     valores_canonicos_ciclos.append({})
-
-    #image = Image.new('RGB', (n, m), (0, 0, 0))
-    #draw.line((0, 0) + image.size, fill=128)
-    #draw.line((0, image.size[1], image.size[0], 0), fill=128)
-
-    #Dibujado    
-    """image = Image.new('RGB', (n, m), (255, 255, 255))
-    draw = ImageDraw.Draw(image)
-    draw.rectangle(((image.size[0]/2)-5, (image.size[1]/2)-5, (image.size[0]/2)+5, (image.size[1]/2)+5), fill = 0)"""
-
-    #Dibujo.
-    #centro_x, centro_y = image.size[0]/2, image.size[1]/2
     
     centro_x, centro_y = 2500, 2500
     tamanio_cuadrado = 2
 
     if len(ciclo) > 1:
     
-        #print("Ciclo :o")
         estados_ciclo = len(ciclo)
-        tamanio_arco = 2*np.pi/estados_ciclo
-        radio_ciclo = 500
-        diagonal = radio_ciclo*sqrt(2)
 
-        #Dibujado
-        #draw.ellipse((centro_x - radio_ciclo, centro_y - radio_ciclo, centro_x + radio_ciclo, centro_y + radio_ciclo), outline=128)
-
-        for i in range(estados_ciclo):
-        
-            offset_x, offset_y = radio_ciclo*np.cos(i*tamanio_arco), radio_ciclo*np.sin(i*tamanio_arco)
-            offset_x_sig, offset_y_sig = radio_ciclo*np.cos((i+1)*tamanio_arco), radio_ciclo*np.sin((i+1)*tamanio_arco)
-
-            #Dibujado
-            #draw.rectangle((centro_x+offset_x-tamanio_cuadrado, centro_y+offset_y-tamanio_cuadrado, centro_x+offset_x+tamanio_cuadrado, centro_y+offset_y+tamanio_cuadrado), fill = 0)
-        
+        for i in range(estados_ciclo):    
+            
             if ciclo[i] in relacion_incidencias:
 
-                ###########
                 #Fragmento para la generacion de valores canónicos.
                 if i == 0:
                     sig_ele_ciclo = ciclo[-1]
@@ -274,24 +240,8 @@ for num_ciclo, ciclo in enumerate(ciclos):
                     valores_canonicos_ciclos[-1][valor_canonico] += 1
 
                 ###########
-
-
-                if len(relacion_incidencias[ciclo[i]]) > 1:
-                    if i == 0:
-                        sig_ele_ciclo = ciclo[-1]
-                    else:
-                        sig_ele_ciclo = ciclo[i-1]
-
-                    #Dibujado
-                    #dibujar_hijos(ciclo[i], i*tamanio_arco, tamanio_arco, (centro_x+offset_x, centro_y+offset_y), is_ciclo=True, siguiente_elemento_ciclo=sig_ele_ciclo)
-
     else:
-        #Dibujado
-        #dibujar_hijos(0, 0, 360, (centro_x, centro_y))
         pass
-
-    #Dibujado
-    #image.save( "{}\{}_{}.png".format(nombre_directorio, regla.replace("/", "_"), num_ciclo),  "PNG")
 
 #Lista valores canonicos...
 #for i, diction in enumerate(valores_canonicos_ciclos):
@@ -319,8 +269,8 @@ if not os.path.exists(nombre_directorio):
     print("No encontrado, creando.")
     os.makedirs(nombre_directorio)
 
-n = 5000
-m = 5000
+n = 15000
+m = 15000
 print("Procesamiento de la imagen")
 
 for num_arbol, arbol in enumerate(arboles_finales):
@@ -339,7 +289,7 @@ for num_arbol, arbol in enumerate(arboles_finales):
         #print("Ciclo :o")
         estados_ciclo = len(ciclo)
         tamanio_arco = 2*np.pi/estados_ciclo
-        radio_ciclo = 500
+        radio_ciclo = 1000
         diagonal = radio_ciclo*sqrt(2)
 
         draw.ellipse((centro_x - radio_ciclo, centro_y - radio_ciclo, centro_x + radio_ciclo, centro_y + radio_ciclo), outline=128)
